@@ -1,0 +1,29 @@
+@model IEnumerable<TestSystem.Models.Submission>
+
+@{
+    ViewData["Title"] = "Мои посылки";
+}
+
+<h2>Мои посылки</h2>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Дата</th>
+        <th>Язык</th>
+        <th>Код</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.CreatedAt</td>
+            <td>@s.Language</td>
+            <td>
+                <pre>@s.Code</pre>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

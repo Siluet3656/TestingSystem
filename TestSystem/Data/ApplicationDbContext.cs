@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TestSystem.Models;
 
 namespace TestSystem.Data
 {
@@ -9,5 +10,7 @@ namespace TestSystem.Data
             : base(options)
         {
         }
+        
+        public DbSet<Submission> Submissions { get; set; }
     }
 }
