@@ -1,3 +1,5 @@
+@model TestSystem.Models.ViewModels.CreateSubmissionViewModel
+
 @{
     ViewData["Title"] = "Отправить решение";
 }
@@ -6,18 +8,32 @@
 
 <form method="post">
     <div class="mb-3">
+        <label class="form-label">Задача</label>
+        <select asp-for="ObjectiveId" class="form-select" asp-items="Model.Objectives">
+            <option value="">-- Выберите задачу --</option>
+        </select>
+        <span asp-validation-for="ObjectiveId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">Язык программирования</label>
-        <select name="language" class="form-select">
+        <select asp-for="Language" class="form-select">
             <option value="C++">C++</option>
             <option value="C">C</option>
             <option value="Python">Python</option>
         </select>
+        <span asp-validation-for="Language" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Код</label>
-        <textarea name="code" rows="12" class="form-control" required></textarea>
+        <textarea asp-for="Code" rows="12" class="form-control" required></textarea>
+        <span asp-validation-for="Code" class="text-danger"></span>
     </div>
 
     <button type="submit" class="btn btn-primary">Отправить</button>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

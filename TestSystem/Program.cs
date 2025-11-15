@@ -17,6 +17,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); 
 
+builder.Services.AddScoped<JudgeService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

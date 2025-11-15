@@ -1,4 +1,5 @@
 @model IEnumerable<TestSystem.Models.Submission>
+@using TestSystem.Models
 
 @{
     ViewData["Title"] = "Мои посылки";
@@ -8,20 +9,50 @@
 
 <table class="table table-bordered">
     <thead>
-    <tr>
-        <th>Дата</th>
-        <th>Язык</th>
-        <th>Код</th>
-    </tr>
+        <tr>
+            <th>Дата</th>
+            <th>Язык</th>
+            <th>Код</th>
+            <th>Статус</th>
+        </tr>
     </thead>
     <tbody>
     @foreach (var s in Model)
     {
         <tr>
-            <td>@s.CreatedAt</td>
-            <td>@s.Language</td>
+            <td>@(s.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"))</td>
+            <td>@Html.DisplayFor(m => s.Language)</td>
+            <td style="white-space:pre-wrap; max-width:700px;">
+                <pre style="margin:0;">@Html.Raw(Html.Encode(s.Code))</pre>
+            </td>
             <td>
-                <pre>@s.Code</pre>
+                @switch (s.Status)
+                {
+                    case SubmissionStatus.Pending:
+                        <span class="badge bg-warning">Не проверено</span>;
+                        break;
+                    case SubmissionStatus.Accepted:
+                        <span class="badge bg-success">Верно (@s.PassedTests / @s.TotalTests)</span>;
+                        break;
+                    case SubmissionStatus.WrongAnswer:
+                        <span class="badge bg-danger">Неверно (@s.PassedTests / @s.TotalTests)</span>;
+                        break;
+                    case SubmissionStatus.CompilationError:
+                        <span class="badge bg-secondary">Ошибка компиляции</span>;
+                        break;
+                    case SubmissionStatus.RuntimeError:
+                        <span class="badge bg-dark text-white">Runtime error</span>;
+                        break;
+                    default:
+                        <span class="badge bg-light text-dark">@s.Status.ToString()</span>;
+                        break;
+                }
+                @if (!string.IsNullOrWhiteSpace(s.ErrorMessage))
+                {
+                    <div class="mt-2"><strong>Ошибка:</strong>
+                        <pre style="white-space:pre-wrap;">@Html.Encode(s.ErrorMessage)</pre>
+                    </div>
+                }
             </td>
         </tr>
     }
