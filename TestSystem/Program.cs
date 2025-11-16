@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TestSystem.Data;
+using TestSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,8 +17,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); 
-
 builder.Services.AddScoped<JudgeService>();
+builder.Services.AddSingleton<CodeRunner>();
+builder.Services.AddScoped<SubmissionEvaluator>();
 
 var app = builder.Build();
 

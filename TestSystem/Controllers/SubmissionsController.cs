@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TestSystem.Data;
 using TestSystem.Models;
 using TestSystem.Models.ViewModels;
+using TestSystem.Services;
 
 namespace TestSystem.Controllers
 {
@@ -14,22 +15,23 @@ namespace TestSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly ILogger<SubmissionsController> _logger;
 
-        public SubmissionsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public SubmissionsController(ApplicationDbContext context, 
+                                     UserManager<IdentityUser> userManager, 
+                                     ILogger<SubmissionsController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
+        // GET: Submissions/Create
         public IActionResult Create()
         {
-            var objectivesList = _context.Objectives
-                .AsNoTracking()
-                .ToList(); 
-
             var model = new CreateSubmissionViewModel
             {
-                Objectives = objectivesList
+                Objectives = _context.Objectives
                     .Select(o => new SelectListItem
                     {
                         Value = o.Id.ToString(),
@@ -40,47 +42,70 @@ namespace TestSystem.Controllers
 
             return View(model);
         }
-        
+
+        // POST: Submissions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateSubmissionViewModel model)
+        public async Task<IActionResult> Create(CreateSubmissionViewModel model,
+                                                [FromServices] SubmissionEvaluator evaluator)
         {
+            _logger.LogInformation("Create POST called. ObjectiveId={id}, Language={lang}", 
+                                    model.ObjectiveId, model.Language);
+
+            // Очистка ModelState для Objectives
+            ModelState.Remove(nameof(model.Objectives));
+
             if (!ModelState.IsValid)
             {
+                // Заполняем список задач заново для селекта
                 model.Objectives = _context.Objectives
-                    .AsNoTracking()
-                    .ToList()
                     .Select(o => new SelectListItem
                     {
                         Value = o.Id.ToString(),
                         Text = o.Title
                     })
                     .ToList();
+
+                foreach (var entry in ModelState)
+                    foreach (var error in entry.Value.Errors)
+                        _logger.LogWarning("Model error for {Key}: {ErrorMessage}", entry.Key, error.ErrorMessage);
+
                 return View(model);
             }
 
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                _logger.LogError("User not found. POST aborted.");
+                return Unauthorized();
+            }
 
             var submission = new Submission
             {
                 UserId = user.Id,
-                ObjectiveId = model.ObjectiveId,
+                ObjectiveId = model.ObjectiveId.Value,
                 Code = model.Code,
                 Language = model.Language,
                 Status = SubmissionStatus.Pending,
                 PassedTests = 0,
                 TotalTests = 0,
                 Output = "",
-                ErrorMessage = "",
-                CreatedAt = DateTime.UtcNow
+                ErrorMessage = ""
             };
 
             _context.Submissions.Add(submission);
             await _context.SaveChangesAsync();
 
+            // Автоматическая проверка в фоне
+            _ = Task.Run(async () =>
+            {
+                await evaluator.EvaluateAsync(submission.Id);
+            });
+
             return RedirectToAction(nameof(MySubmissions));
         }
-        
+
+        // GET: Мои решения
         public IActionResult MySubmissions()
         {
             var userId = _userManager.GetUserId(User);
@@ -92,7 +117,8 @@ namespace TestSystem.Controllers
 
             return View(submissions);
         }
-        
+
+        // GET: Все решения (админ)
         [Authorize(Roles = "Admin")]
         public IActionResult AllSubmissions()
         {
@@ -103,29 +129,6 @@ namespace TestSystem.Controllers
                 .ToList();
 
             return View(submissions);
-        }
-        
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Judge(int id, [FromServices] JudgeService judge)
-        {
-            var submission = await _context.Submissions
-                .Include(s => s.Objective)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (submission == null)
-                return NotFound();
-
-            var result = await judge.RunSubmissionAsync(submission);
-
-            submission.Status = result.Status;
-            submission.PassedTests = result.Passed;
-            submission.TotalTests = result.TotalTests;
-            submission.Output = result.Output ?? "";
-            submission.ErrorMessage = result.ErrorMessage ?? "";
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(AllSubmissions));
         }
     }
 }
