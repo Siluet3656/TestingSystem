@@ -1,0 +1,28 @@
+@model IEnumerable<TestSystem.Models.Objective>
+
+<h2>Список задач</h2>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Название</th>
+        <th>Описание</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var obj in Model)
+    {
+        <tr>
+            <td>@obj.Id</td>
+            <td>@obj.Title</td>
+            <td>@obj.Description</td>
+            <td>
+                <a class="btn btn-primary" asp-action="Details" asp-route-id="@obj.Id">Просмотр</a>
+                <a class="btn btn-success" asp-controller="Submissions" asp-action="Create" asp-route-taskId="@obj.Id">Отправить решение</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

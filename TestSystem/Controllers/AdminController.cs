@@ -5,7 +5,7 @@ using TestSystem.Data;
 
 namespace TestSystem.Controllers
 {
-    [Authorize(Roles = "Admin")] // Доступ только для Admin
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -14,14 +14,12 @@ namespace TestSystem.Controllers
         {
             _userManager = userManager;
         }
-
-        // Главная страница админа
+        
         public IActionResult Index()
         {
             return View();
         }
-
-        // Список всех пользователей
+        
         public IActionResult Users()
         {
             var users = _userManager.Users.ToList();

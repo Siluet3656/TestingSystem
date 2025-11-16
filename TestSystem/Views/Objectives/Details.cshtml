@@ -1,0 +1,20 @@
+@model Objective
+
+<h2>@Model.Title</h2>
+
+<p>@Model.Description</p>
+
+<h4>Примеры</h4>
+
+@foreach (var t in Model.Tests.Where(t => !t.IsHidden))
+{
+    <div class="border p-2 mb-2">
+        <b>Input:</b>
+        <pre>@t.Input</pre>
+
+        <b>Output:</b>
+        <pre>@t.ExpectedOutput</pre>
+    </div>
+}
+
+<a class="btn btn-primary" href="/Submissions/Create?taskId=@Model.Id">Отправить решение</a>

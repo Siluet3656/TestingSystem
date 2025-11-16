@@ -6,11 +6,32 @@
     
     <h1 class="display-4">Добро пожаловать на главную!</h1>
 
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-controller="Submissions" asp-action="Create">Отправить решение</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-controller="Submissions" asp-action="MySubmissions">Мои решения</a>
-    </li>
+
+    <a class="btn btn-primary mt-3"
+       asp-controller="Submissions"
+       asp-action="Create">
+        Отправить решение
+    </a>
+
+    <a class="btn btn-primary mt-3"
+       asp-controller="Submissions"
+       asp-action="MySubmissions">
+        Мои решения
+    </a>
+
+    <a class="btn btn-dark mt-3"
+       asp-controller="Objectives"
+       asp-action="List">
+        Задачи
+    </a>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("TaskCreator"))
+    {
+        <a asp-controller="Objectives"
+           asp-action="Create"
+           class="btn btn-warning mt-3">
+            Создать задачу
+        </a>
+    }
 
 </div>

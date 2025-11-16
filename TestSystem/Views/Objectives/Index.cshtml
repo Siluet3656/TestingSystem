@@ -1,0 +1,43 @@
+@model IEnumerable<TestSystem.Models.Objective>
+
+@{
+    ViewData["Title"] = "Список задач";
+}
+
+<h2>Список задач</h2>
+
+@if (User.IsInRole("TaskCreator") || User.IsInRole("Admin"))
+{
+    <a class="btn btn-primary mb-3" asp-controller="Objectives" asp-action="Create">
+        Добавить задачу
+    </a>
+}
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Название</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var o in Model)
+    {
+        <tr>
+            <td>@o.Title</td>
+            <td>
+                <a class="btn btn-sm btn-info" asp-controller="Objectives" asp-action="Details" asp-route-id="@o.Id">Открыть</a>
+
+                @if (User.IsInRole("TaskCreator") || User.IsInRole("Admin"))
+                {
+                    <a class="btn btn-sm btn-warning" asp-controller="Objectives" asp-action="Edit" asp-route-id="@o.Id">Редактировать</a>
+
+                    <a class="btn btn-sm btn-danger" asp-controller="Objectives" asp-action="Delete" asp-route-id="@o.Id">
+                        Удалить
+                    </a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
