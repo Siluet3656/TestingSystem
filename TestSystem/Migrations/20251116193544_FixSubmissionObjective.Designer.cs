@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestSystem.Data;
 
@@ -10,9 +11,11 @@ using TestSystem.Data;
 namespace TestSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251116193544_FixSubmissionObjective")]
+    partial class FixSubmissionObjective
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.12");
@@ -289,6 +292,9 @@ namespace TestSystem.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("TaskId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("TotalTests")
                         .HasColumnType("INTEGER");
 
@@ -298,7 +304,7 @@ namespace TestSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ObjectiveId");
+                    b.HasIndex("TaskId");
 
                     b.HasIndex("UserId");
 
@@ -371,7 +377,7 @@ namespace TestSystem.Migrations
                 {
                     b.HasOne("TestSystem.Models.Objective", "Objective")
                         .WithMany("Submissions")
-                        .HasForeignKey("ObjectiveId")
+                        .HasForeignKey("TaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

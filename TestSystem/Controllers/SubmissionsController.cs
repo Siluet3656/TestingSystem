@@ -21,13 +21,11 @@ namespace TestSystem.Controllers
             _userManager = userManager;
         }
 
-        // GET: Отправка решения
         public IActionResult Create()
         {
-            // Сначала материализуем список задач в память, чтобы избежать конфликтов LINQ
             var objectivesList = _context.Objectives
                 .AsNoTracking()
-                .ToList(); // IEnumerable<Objective>
+                .ToList(); 
 
             var model = new CreateSubmissionViewModel
             {
@@ -42,15 +40,13 @@ namespace TestSystem.Controllers
 
             return View(model);
         }
-
-        // POST: Отправка решения
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateSubmissionViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                // Если модель невалидна, заново заполняем список задач
                 model.Objectives = _context.Objectives
                     .AsNoTracking()
                     .ToList()
@@ -68,7 +64,7 @@ namespace TestSystem.Controllers
             var submission = new Submission
             {
                 UserId = user.Id,
-                TaskId = model.ObjectiveId, // здесь правильное поле для выбора задачи
+                ObjectiveId = model.ObjectiveId,
                 Code = model.Code,
                 Language = model.Language,
                 Status = SubmissionStatus.Pending,
@@ -84,9 +80,7 @@ namespace TestSystem.Controllers
 
             return RedirectToAction(nameof(MySubmissions));
         }
-
-
-        // GET: Мои посылки
+        
         public IActionResult MySubmissions()
         {
             var userId = _userManager.GetUserId(User);
@@ -98,8 +92,7 @@ namespace TestSystem.Controllers
 
             return View(submissions);
         }
-
-        // GET: Все посылки (админ)
+        
         [Authorize(Roles = "Admin")]
         public IActionResult AllSubmissions()
         {
@@ -111,8 +104,7 @@ namespace TestSystem.Controllers
 
             return View(submissions);
         }
-
-        // GET: Проверка посылки (админ)
+        
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Judge(int id, [FromServices] JudgeService judge)
         {

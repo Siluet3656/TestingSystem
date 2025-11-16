@@ -22,13 +22,13 @@ namespace TestSystem.Models
         public string UserId { get; set; }
 
         [ForeignKey("UserId")]
-        public IdentityUser User { get; set; } // <-- Навигационное свойство
+        public IdentityUser User { get; set; }
 
         [Required]
-        public int TaskId { get; set; }
+        public int ObjectiveId { get; set; }
 
-        [ForeignKey("TaskId")]
-        public Objective Objective { get; set; } // <-- Навигационное свойство
+        [ForeignKey("ObjectiveId")]
+        public Objective Objective { get; set; }
 
         [Required]
         public string Code { get; set; }
