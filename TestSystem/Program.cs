@@ -18,8 +18,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); 
 builder.Services.AddScoped<JudgeService>();
-builder.Services.AddSingleton<CodeRunner>();
 builder.Services.AddScoped<SubmissionEvaluator>();
+builder.Services.AddScoped<CodeRunner>();
+builder.Services.AddHostedService<SubmissionBackgroundService>();
+
 
 var app = builder.Build();
 

@@ -57,7 +57,6 @@ namespace TestSystem.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Заполняем список задач заново для селекта
                 model.Objectives = _context.Objectives
                     .Select(o => new SelectListItem
                     {
@@ -95,13 +94,7 @@ namespace TestSystem.Controllers
 
             _context.Submissions.Add(submission);
             await _context.SaveChangesAsync();
-
-            // Автоматическая проверка в фоне
-            _ = Task.Run(async () =>
-            {
-                await evaluator.EvaluateAsync(submission.Id);
-            });
-
+            
             return RedirectToAction(nameof(MySubmissions));
         }
 

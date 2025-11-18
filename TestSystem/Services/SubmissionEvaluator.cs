@@ -1,65 +1,89 @@
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TestSystem.Data;
 using TestSystem.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace TestSystem.Services
 {
     public class SubmissionEvaluator
     {
-        private readonly ApplicationDbContext _context;
-        private readonly CodeRunner _codeRunner;
+        private readonly ApplicationDbContext _db;
+        private readonly CodeRunner _runner;
         private readonly ILogger<SubmissionEvaluator> _logger;
 
-        public SubmissionEvaluator(ApplicationDbContext context, CodeRunner codeRunner, ILogger<SubmissionEvaluator> logger)
+        public SubmissionEvaluator(
+            ApplicationDbContext db,
+            CodeRunner runner,
+            ILogger<SubmissionEvaluator> logger)
         {
-            _context = context;
-            _codeRunner = codeRunner;
+            _db = db;
+            _runner = runner;
             _logger = logger;
         }
 
-        public async Task EvaluateAsync(int submissionId)
+        public async Task EvaluateSubmissionAsync(int submissionId)
         {
-            var submission = await _context.Submissions.FindAsync(submissionId);
+            _logger.LogInformation("Start evaluating submission #{id}", submissionId);
+            
+            var submission = await _db.Submissions
+                .Include(s => s.Objective)
+                .ThenInclude(o => o.Tests) 
+                .FirstOrDefaultAsync(s => s.Id == submissionId);
+
             if (submission == null)
             {
-                _logger.LogWarning("Submission {Id} not found.", submissionId);
+                _logger.LogError("Submission {id} not found!", submissionId);
                 return;
             }
 
+            submission.Status = SubmissionStatus.Pending;
+            await _db.SaveChangesAsync();
+
             try
             {
-                _logger.LogInformation("Evaluating submission {Id}...", submissionId);
+                var tests = submission.Objective.Tests.ToList();
 
-                var result = await _codeRunner.RunAsync(submission.Code, submission.Language);
+                submission.TotalTests = tests.Count;
+                submission.PassedTests = 0;
 
-                if (result.Status == "CompilationError")
+                foreach (var test in tests)
                 {
-                    submission.Status = SubmissionStatus.CompilationError;
+                    var result = await _runner.Run(submission.Code, submission.Language, test.Input);
+                    
+                    _logger.LogInformation("G++ OUT: " + result.Output);
+                    _logger.LogError("G++ ERR: " + result.Error);
+
+                    if (!string.IsNullOrEmpty(result.Error))
+                    {
+                        submission.Status = SubmissionStatus.RuntimeError;
+                        submission.ErrorMessage = result.Error;
+                        break;
+                    }
+
+                    if (result.Output.Trim() == test.ExpectedOutput.Trim())
+                        submission.PassedTests++;
                 }
-                else if (result.ExitCode != 0)
-                {
-                    submission.Status = SubmissionStatus.RuntimeError;
-                }
-                else
-                {
+
+                if (submission.PassedTests == submission.TotalTests)
                     submission.Status = SubmissionStatus.Accepted;
-                }
-
-                submission.PassedTests = submission.Status == SubmissionStatus.Accepted ? 1 : 0;
-                submission.TotalTests = 1;
-                submission.Output = result.Output ?? "";
-                submission.ErrorMessage = result.ErrorMessage ?? "";
-
-                _logger.LogInformation("Submission {Id} evaluated. Status={Status}", submissionId, submission.Status);
+                else if (submission.Status != SubmissionStatus.RuntimeError)
+                    submission.Status = SubmissionStatus.WrongAnswer;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Evaluation failed");
                 submission.Status = SubmissionStatus.RuntimeError;
                 submission.ErrorMessage = ex.Message;
-                _logger.LogError(ex, "Error evaluating submission {Id}", submissionId);
             }
 
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Finished submission #{id} with status {status}",
+                submission.Id, submission.Status);
         }
     }
 }
