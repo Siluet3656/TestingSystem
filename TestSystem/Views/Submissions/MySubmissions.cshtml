@@ -22,8 +22,17 @@
         <tr>
             <td>@(s.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"))</td>
             <td>@Html.DisplayFor(m => s.Language)</td>
-            <td style="white-space:pre-wrap; max-width:400px;">
-                <pre style="margin:0; max-height: 100px; overflow: auto;">@Html.Raw(Html.Encode(s.Code))</pre>
+            <td style="max-width:400px;">
+                <button class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#codeModal"
+                        data-code="@Html.Raw(Html.Encode(s.Code))"
+                        data-language="@s.Language">
+                    Показать код
+                </button>
+                <div class="mt-1 small text-muted">
+                    @(s.Code.Length > 100 ? s.Code.Substring(0, 100) + "..." : s.Code)
+                </div>
             </td>
             <td>
                 @switch (s.Status)
@@ -63,3 +72,54 @@
 </table>
 
 <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">← Назад</a>
+
+<div class="modal fade" id="codeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Код решения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var codeModal = document.getElementById('codeModal');
+            
+            codeModal.addEventListener('shown.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var code = button.getAttribute('data-code');
+                var language = button.getAttribute('data-language');
+                var langClass = getLanguageClass(language);
+
+                var modalBody = document.querySelector('#codeModal .modal-body');
+                
+                modalBody.innerHTML = 
+                    '<pre style="margin:0;">' +
+                    '<code class="language-' + langClass + '" id="modalCode">' + 
+                    code + 
+                    '</code></pre>';
+                
+                var modalCode = document.getElementById('modalCode');
+                hljs.highlightElement(modalCode);
+            });
+
+            function getLanguageClass(language) {
+                if (!language) return 'plaintext';
+                var lang = language.toLowerCase();
+                if (lang === 'python') return 'python';
+                if (lang === 'csharp' || lang === 'c#') return 'csharp';
+                if (lang === 'java') return 'java';
+                if (lang === 'javascript' || lang === 'js') return 'javascript';
+                if (lang === 'cpp' || lang === 'c++') return 'cpp';
+                if (lang === 'c') return 'c';
+                return 'plaintext';
+            }
+        });
+    </script>
+}

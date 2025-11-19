@@ -10,10 +10,10 @@
 {
     <div class="border p-2 mb-2">
         <b>Input:</b>
-        <pre>@t.Input</pre>
+        <pre><code class="language-plaintext">@t.Input</code></pre>
 
         <b>Output:</b>
-        <pre>@t.ExpectedOutput</pre>
+        <pre><code class="language-plaintext">@t.ExpectedOutput</code></pre>
     </div>
 }
 
@@ -21,3 +21,19 @@
 <br/>
 <br/>
 <a class="btn btn-secondary" asp-action="List">← Назад к списку</a>
+
+@functions {
+    public string GetLanguageClass(string language)
+    {
+        return language?.ToLower() switch
+        {
+            "python" => "python",
+            "csharp" or "c#" => "csharp",
+            "java" => "java",
+            "javascript" or "js" => "javascript",
+            "cpp" or "c++" => "cpp",
+            "c" => "c",
+            _ => "plaintext"
+        };
+    }
+}
