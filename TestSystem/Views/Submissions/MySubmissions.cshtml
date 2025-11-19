@@ -22,8 +22,8 @@
         <tr>
             <td>@(s.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"))</td>
             <td>@Html.DisplayFor(m => s.Language)</td>
-            <td style="white-space:pre-wrap; max-width:700px;">
-                <pre style="margin:0;">@Html.Raw(Html.Encode(s.Code))</pre>
+            <td style="white-space:pre-wrap; max-width:400px;">
+                <pre style="margin:0; max-height: 100px; overflow: auto;">@Html.Raw(Html.Encode(s.Code))</pre>
             </td>
             <td>
                 @switch (s.Status)

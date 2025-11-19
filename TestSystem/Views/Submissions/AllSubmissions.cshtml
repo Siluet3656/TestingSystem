@@ -1,0 +1,82 @@
+@model IEnumerable<TestSystem.Models.Submission>
+@using TestSystem.Models
+@using TestSystem.Data
+@inject ApplicationDbContext DbContext
+
+@{
+    ViewData["Title"] = "Все посылки";
+}
+
+<h2>Все посылки</h2>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Пользователь</th>
+        <th>Задача</th>
+        <th>Дата</th>
+        <th>Язык</th>
+        <th>Код</th>
+        <th>Статус</th>
+        <th>Тесты</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var s in Model)
+    {
+        // Получаем профиль пользователя для текущей посылки
+        var userProfile = DbContext.UserProfiles
+            .FirstOrDefault(up => up.UserId == s.UserId);
+
+        <tr>
+            <td>
+                @if (userProfile != null)
+                {
+                    <text>@userProfile.FirstName @userProfile.LastName (@s.User.UserName)</text>
+                }
+                else
+                {
+                    <text>@s.User.UserName</text>
+                }
+            </td>
+            <td>@(s.Objective?.Title ?? "Задача #" + s.ObjectiveId)</td>
+            <td>@(s.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"))</td>
+            <td>@Html.DisplayFor(m => s.Language)</td>
+            <td style="white-space:pre-wrap; max-width:400px;">
+                <pre style="margin:0; max-height: 100px; overflow: auto;">@Html.Raw(Html.Encode(s.Code))</pre>
+            </td>
+            <td>
+                @switch (s.Status)
+                {
+                    case SubmissionStatus.Pending:
+                        <span class="badge bg-warning">Ожидание</span>;
+                        break;
+                    case SubmissionStatus.Accepted:
+                        <span class="badge bg-success">Принято</span>;
+                        break;
+                    case SubmissionStatus.WrongAnswer:
+                        <span class="badge bg-danger">Неверный ответ</span>;
+                        break;
+                    case SubmissionStatus.CompilationError:
+                        <span class="badge bg-secondary">Ошибка компиляции</span>;
+                        break;
+                    case SubmissionStatus.RuntimeError:
+                        <span class="badge bg-dark text-white">Ошибка выполнения</span>;
+                        break;
+                    default:
+                        <span class="badge bg-light text-dark">@s.Status.ToString()</span>;
+                        break;
+                }
+            </td>
+            <td>@s.PassedTests / @s.TotalTests</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        Нет данных о посылках
+    </div>
+}

@@ -26,11 +26,11 @@ namespace TestSystem.Controllers
             _logger = logger;
         }
 
-        // GET: Submissions/Create
-        public IActionResult Create()
+        public IActionResult Create(int? taskId)
         {
             var model = new CreateSubmissionViewModel
             {
+                ObjectiveId = taskId,
                 Objectives = _context.Objectives
                     .Select(o => new SelectListItem
                     {
@@ -42,8 +42,7 @@ namespace TestSystem.Controllers
 
             return View(model);
         }
-
-        // POST: Submissions/Create
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateSubmissionViewModel model,
@@ -51,8 +50,7 @@ namespace TestSystem.Controllers
         {
             _logger.LogInformation("Create POST called. ObjectiveId={id}, Language={lang}", 
                                     model.ObjectiveId, model.Language);
-
-            // Очистка ModelState для Objectives
+            
             ModelState.Remove(nameof(model.Objectives));
 
             if (!ModelState.IsValid)
@@ -97,8 +95,7 @@ namespace TestSystem.Controllers
             
             return RedirectToAction(nameof(MySubmissions));
         }
-
-        // GET: Мои решения
+        
         public IActionResult MySubmissions()
         {
             var userId = _userManager.GetUserId(User);
@@ -110,18 +107,16 @@ namespace TestSystem.Controllers
 
             return View(submissions);
         }
-
-        // GET: Все решения (админ)
-        [Authorize(Roles = "Admin")]
+        
+        [Authorize(Roles = "Admin,TaskCreator")]
         public IActionResult AllSubmissions()
         {
             var submissions = _context.Submissions
+                .Include(s => s.User) 
                 .Include(s => s.Objective)
-                .Include(s => s.User)
-                .OrderByDescending(s => s.CreatedAt)
                 .ToList();
-
-            return View(submissions);
+    
+            return View(submissions); 
         }
     }
 }

@@ -22,7 +22,6 @@ builder.Services.AddScoped<SubmissionEvaluator>();
 builder.Services.AddScoped<CodeRunner>();
 builder.Services.AddHostedService<SubmissionBackgroundService>();
 
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

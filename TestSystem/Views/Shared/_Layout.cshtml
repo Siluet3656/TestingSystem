@@ -1,5 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using TestSystem.Models
+@using TestSystem.Data
+@inject ApplicationDbContext DbContext
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,11 +27,26 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                    </li>
+                    @if (User.IsInRole("TaskCreator") || User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Submissions" asp-action="AllSubmissions">Все посылки</a>
+                        </li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            var currentUser = await UserManager.GetUserAsync(User);
+                            var roles = await UserManager.GetRolesAsync(currentUser);
+                            
+                            @if (roles.Contains("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Панель администратора</a>
+                                </li>
+                            }
+                        }
+                    }
                 </ul>
 
                 <ul class="navbar-nav">
@@ -39,19 +57,22 @@
                     {
                         var currentUser = await UserManager.GetUserAsync(User);
                         var roles = await UserManager.GetRolesAsync(currentUser);
+                        
+                        var userProfile = DbContext.UserProfiles
+                            .FirstOrDefault(up => up.UserId == currentUser.Id);
 
                         <li class="nav-item">
                             <span class="nav-link text-dark">
-                                @currentUser.UserName (@string.Join(", ", roles))
+                                @if (userProfile != null)
+                                {
+                                    <text>@userProfile.FirstName @userProfile.LastName (@string.Join(", ", roles))</text>
+                                }
+                                else
+                                {
+                                    <text>@currentUser.UserName (@string.Join(", ", roles))</text>
+                                }
                             </span>
                         </li>
-
-                        @if (roles.Contains("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Admin Panel</a>
-                            </li>
-                        }
 
                         <partial name="_LoginPartial" />
                     }
@@ -73,8 +94,7 @@
 
 <footer class="border-top footer text-muted">
     <div class="container">
-        &copy; 2025 - TestSystem -
-        <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        &copy; 2025 - TestSystem
     </div>
 </footer>
 

@@ -14,5 +14,6 @@ namespace TestSystem.Data
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<Objective> Objectives { get; set; }
         public DbSet<TestCase> TestCases { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
     }
 }
