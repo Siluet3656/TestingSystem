@@ -34,8 +34,7 @@ namespace TestSystem.Services
 
                     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     var evaluator = scope.ServiceProvider.GetRequiredService<SubmissionEvaluator>();
-
-                    // Ищем невыполненную посылку
+                    
                     var submission = await db.Submissions
                         .Include(s => s.Objective)
                         .FirstOrDefaultAsync(s => s.Status == SubmissionStatus.Pending, stoppingToken);
@@ -43,8 +42,7 @@ namespace TestSystem.Services
                     if (submission != null)
                     {
                         _logger.LogInformation($"Found pending submission #{submission.Id}");
-
-                        // Исправление: передаём ID
+                        
                         await evaluator.EvaluateSubmissionAsync(submission.Id);
                     }
                 }
