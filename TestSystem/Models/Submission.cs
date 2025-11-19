@@ -11,7 +11,8 @@ namespace TestSystem.Models
         Accepted = 1,
         WrongAnswer = 2,
         CompilationError = 3,
-        RuntimeError = 4
+        RuntimeError = 4,
+        Running = 5
     }
     
     public class Submission

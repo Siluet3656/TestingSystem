@@ -63,6 +63,9 @@
                     case SubmissionStatus.RuntimeError:
                         <span class="badge bg-dark text-white">Ошибка выполнения</span>;
                         break;
+                    case SubmissionStatus.Running:
+                        <span class="badge bg-warning">Тестируется</span>;
+                        break;
                     default:
                         <span class="badge bg-light text-dark">@s.Status.ToString()</span>;
                         break;

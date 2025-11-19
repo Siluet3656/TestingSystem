@@ -39,7 +39,7 @@ namespace TestSystem.Services
                 return;
             }
 
-            submission.Status = SubmissionStatus.Pending;
+            submission.Status = SubmissionStatus.Running;
             await _db.SaveChangesAsync();
 
             try
