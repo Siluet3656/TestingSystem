@@ -23,6 +23,10 @@
             <td>
                 <a class="btn btn-primary" asp-action="Details" asp-route-id="@obj.Id">Просмотр</a>
                 <a class="btn btn-success" asp-controller="Submissions" asp-action="Create" asp-route-taskId="@obj.Id">Отправить решение</a>
+                @if (User.IsInRole("Admin") || User.IsInRole("TaskCreator"))
+                {
+                    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@obj.Id">Редактировать</a>
+                }
             </td>
         </tr>
         counter++;

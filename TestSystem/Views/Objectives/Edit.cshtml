@@ -1,0 +1,84 @@
+@model EditObjectiveViewModel
+
+<h2>Редактировать задачу</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label>Название</label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Описание</label>
+        <textarea asp-for="Description" rows="5" class="form-control"></textarea>
+    </div>
+
+    <h4>Тесты</h4>
+    <div id="tests">
+        @for (int i = 0; i < Model.Tests.Count; i++)
+        {
+            <div class="border p-3 mb-3">
+                <input type="hidden" asp-for="Tests[i].Id" />
+
+                <div class="mb-2">
+                    <label>Input</label>
+                    <textarea asp-for="Tests[i].Input" class="form-control"></textarea>
+                </div>
+
+                <div class="mb-2">
+                    <label>Expected Output</label>
+                    <textarea asp-for="Tests[i].ExpectedOutput" class="form-control"></textarea>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input asp-for="Tests[i].IsHidden" class="form-check-input" />
+                    <label class="form-check-label">Скрытый тест</label>
+                </div>
+
+                <div class="form-check">
+                    <input asp-for="Tests[i].ToDelete" class="form-check-input" />
+                    <label class="form-check-label">Удалить тест</label>
+                </div>
+            </div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="addTest()">Добавить тест</button>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+</form>
+
+<script>
+function addTest() {
+    const index = document.querySelectorAll("#tests > div").length;
+
+    const html = `
+<div class="border p-3 mb-3">
+    <input type="hidden" name="Tests[${index}].Id" value="" />
+
+    <div class="mb-2">
+        <label>Input</label>
+        <textarea name="Tests[${index}].Input" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-2">
+        <label>Expected Output</label>
+        <textarea name="Tests[${index}].ExpectedOutput" class="form-control"></textarea>
+    </div>
+
+    <div class="form-check mb-2">
+        <input type="checkbox" name="Tests[${index}].IsHidden" class="form-check-input" value="true"/>
+        <input type="hidden" name="Tests[${index}].IsHidden" value="false"/>
+        <label class="form-check-label">Скрытый тест</label>
+    </div>
+
+    <div class="form-check">
+        <input type="checkbox" name="Tests[${index}].ToDelete" class="form-check-input" value="true"/>
+        <input type="hidden" name="Tests[${index}].ToDelete" value="false"/>
+        <label class="form-check-label">Удалить тест</label>
+    </div>
+</div>`;
+    document.getElementById("tests").insertAdjacentHTML("beforeend", html);
+}
+</script>
