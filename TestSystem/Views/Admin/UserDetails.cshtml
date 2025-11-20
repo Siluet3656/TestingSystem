@@ -1,0 +1,99 @@
+@using TestSystem.Models.ViewModels
+@model UserDetailViewModel
+
+@{
+    ViewData["Title"] = "Детали пользователя";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user me-2"></i>Детали пользователя</h2>
+        <a asp-action="Users" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Назад к списку
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">ID:</th>
+                            <td><code>@Model.Id</code></td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>
+                                @Model.Email
+                                @if (Model.EmailConfirmed)
+                                {
+                                    <span class="badge bg-success ms-2">Подтвержден</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Не подтвержден</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Имя пользователя:</th>
+                            <td>@Model.UserName</td>
+                        </tr>
+                        <tr>
+                            <th>Телефон:</th>
+                            <td>@(Model.PhoneNumber ?? "Не указан")</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Профиль</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Имя:</th>
+                            <td>@Model.FirstName</td>
+                        </tr>
+                        <tr>
+                            <th>Фамилия:</th>
+                            <td>@Model.LastName</td>
+                        </tr>
+                        <tr>
+                            <th>Дата регистрации:</th>
+                            <td>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <th>Роли:</th>
+                            <td>
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <span class="badge bg-primary me-1">@role</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="btn-group">
+            <button class="btn btn-warning" onclick="editUser('@Model.Id')">
+                <i class="fas fa-edit me-1"></i>Редактировать
+            </button>
+            <button class="btn btn-danger" onclick="confirmDelete('@Model.Id', '@Model.Email')">
+                <i class="fas fa-trash me-1"></i>Удалить
+            </button>
+        </div>
+    </div>
+</div>
