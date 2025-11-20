@@ -9,12 +9,12 @@
 
 <table class="table table-bordered">
     <thead>
-        <tr>
-            <th>Дата</th>
-            <th>Язык</th>
-            <th>Код</th>
-            <th>Статус</th>
-        </tr>
+    <tr>
+        <th>Дата</th>
+        <th>Язык</th>
+        <th>Код</th>
+        <th>Статус</th>
+    </tr>
     </thead>
     <tbody>
     @foreach (var s in Model)
@@ -26,10 +26,12 @@
                 <button class="btn btn-sm btn-outline-primary"
                         data-bs-toggle="modal"
                         data-bs-target="#codeModal"
-                        data-code="@Html.Raw(Html.Encode(s.Code))"
-                        data-language="@s.Language">
-                    Показать код
+
+                        data-code="@Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(s.Code))"
+                data-language="@s.Language">
+                Показать код
                 </button>
+
                 <div class="mt-1 small text-muted">
                     @(s.Code.Length > 100 ? s.Code.Substring(0, 100) + "..." : s.Code)
                 </div>
@@ -80,31 +82,33 @@
                 <h5 class="modal-title">Код решения</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-0">
-            </div>
+            <div class="modal-body p-0"></div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var codeModal = document.getElementById('codeModal');
-            
+
             codeModal.addEventListener('shown.bs.modal', function (event) {
                 var button = event.relatedTarget;
-                var code = button.getAttribute('data-code');
+
+                // Декодируем Base64 обратно в текст  // FIXED
+                var code = atob(button.getAttribute('data-code'));
+
                 var language = button.getAttribute('data-language');
                 var langClass = getLanguageClass(language);
 
                 var modalBody = document.querySelector('#codeModal .modal-body');
-                
-                modalBody.innerHTML = 
+
+                modalBody.innerHTML =
                     '<pre style="margin:0;">' +
-                    '<code class="language-' + langClass + '" id="modalCode">' + 
-                    code + 
+                    '<code class="language-' + langClass + '" id="modalCode">' +
+                    code.replace(/</g, "&lt;").replace(/>/g, "&gt;") + 
                     '</code></pre>';
-                
+
                 var modalCode = document.getElementById('modalCode');
                 hljs.highlightElement(modalCode);
             });
