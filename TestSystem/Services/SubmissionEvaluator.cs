@@ -42,19 +42,35 @@ namespace TestSystem.Services
             submission.Status = SubmissionStatus.Running;
             await _db.SaveChangesAsync();
 
+            CompilationResult compilation = null;
+
             try
             {
+                compilation = await _runner.CompileAsync(submission.Code, submission.Language);
+                
+                if (!compilation.Success)
+                {
+                    submission.Status = SubmissionStatus.CompilationError;
+                    submission.ErrorMessage = compilation.Error;
+                    await _db.SaveChangesAsync();
+                    return;
+                }
+
                 var tests = submission.Objective.Tests.ToList();
 
                 submission.TotalTests = tests.Count;
                 submission.PassedTests = 0;
-
+                
                 foreach (var test in tests)
                 {
-                    var result = await _runner.Run(submission.Code, submission.Language, test.Input);
+                    var result = await _runner.RunAsync(
+                        compilation.ExecutablePath, 
+                        compilation.WorkingDirectory, 
+                        test.Input
+                    );
                     
-                    _logger.LogInformation("G++ OUT: " + result.Output);
-                    _logger.LogError("G++ ERR: " + result.Error);
+                    _logger.LogInformation("Program OUT: " + result.Output);
+                    _logger.LogError("Program ERR: " + result.Error);
 
                     if (!string.IsNullOrEmpty(result.Error))
                     {
@@ -78,8 +94,10 @@ namespace TestSystem.Services
                 submission.Status = SubmissionStatus.RuntimeError;
                 submission.ErrorMessage = ex.Message;
             }
-
-            await _db.SaveChangesAsync();
+            finally
+            {
+                await _db.SaveChangesAsync();
+            }
 
             _logger.LogInformation(
                 "Finished submission #{id} with status {status}",

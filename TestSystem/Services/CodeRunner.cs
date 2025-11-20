@@ -8,22 +8,33 @@ namespace TestSystem.Services
         public string Error { get; set; }
     }
 
-    public class CodeRunner
+    public class CompilationResult
+    {
+        public bool Success { get; set; }
+        public string ExecutablePath { get; set; }
+        public string WorkingDirectory { get; set; }
+        public string Error { get; set; }
+    }
+
+    public class CodeRunner : IDisposable
     {
         private readonly ILogger<CodeRunner> _logger;
 
         private const string GppPath = @"E:\dev\w64devkit\bin\g++.exe";
         private const string W64Bin = @"E:\dev\w64devkit\bin";
 
+        private readonly List<string> _tempDirectories = new();
+
         public CodeRunner(ILogger<CodeRunner> logger)
         {
             _logger = logger;
         }
 
-        public async Task<CodeRunResult> Run(string code, string lang, string input)
+        public async Task<CompilationResult> CompileAsync(string code, string lang)
         {
             string workDir = Path.Combine(AppContext.BaseDirectory, "Temp", "code_" + Guid.NewGuid());
             Directory.CreateDirectory(workDir);
+            _tempDirectories.Add(workDir);
 
             string srcFile = Path.Combine(workDir, "main.cpp");
             string exeFile = Path.Combine(workDir, "a.exe");
@@ -61,23 +72,43 @@ namespace TestSystem.Services
             if (!compile.HasExited)
             {
                 compile.Kill(true);
-                return new CodeRunResult { Error = "Compilation error: compiler hang (timeout)" };
+                return new CompilationResult 
+                { 
+                    Success = false,
+                    Error = "Compilation error: compiler hang (timeout)" 
+                };
             }
 
             if (compile.ExitCode != 0)
             {
                 _logger.LogError("Compilation failed: {err}", compileErr);
-                return new CodeRunResult { Error = "Compilation error:\n" + compileErr };
+                return new CompilationResult 
+                { 
+                    Success = false,
+                    Error = "Compilation error:\n" + compileErr 
+                };
             }
 
-            _logger.LogInformation("Running compiled file: {file}", exeFile);
+            _logger.LogInformation("Compilation successful, executable: {file}", exeFile);
+
+            return new CompilationResult
+            {
+                Success = true,
+                ExecutablePath = exeFile,
+                WorkingDirectory = workDir
+            };
+        }
+
+        public async Task<CodeRunResult> RunAsync(string executablePath, string workingDirectory, string input)
+        {
+            _logger.LogInformation("Running compiled file: {file}", executablePath);
 
             var run = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = exeFile,
-                    WorkingDirectory = workDir,
+                    FileName = executablePath,
+                    WorkingDirectory = workingDirectory,
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
@@ -112,6 +143,25 @@ namespace TestSystem.Services
                 Output = output.Trim(),
                 Error = errorOutput.Trim()
             };
+        }
+
+        public void Dispose()
+        {
+            foreach (var dir in _tempDirectories)
+            {
+                try
+                {
+                    if (Directory.Exists(dir))
+                    {
+                        Directory.Delete(dir, true);
+                        _logger.LogInformation("Cleaned up temporary directory: {dir}", dir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete temporary directory: {dir}", dir);
+                }
+            }
         }
     }
 }
