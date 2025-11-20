@@ -79,7 +79,7 @@ namespace TestSystem.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
+            [Required(ErrorMessage = "Поле Почта обязательно для заполнения")]
             [EmailAddress]
             [Display(Name = "Почта")]
             public string Email { get; set; }
@@ -88,7 +88,7 @@ namespace TestSystem.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
+            [Required(ErrorMessage = "Поле Пароль обязательно для заполнения")]
             [StringLength(100, ErrorMessage = "Пароль должен содержать от {2} до {1} символов.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Пароль")]
@@ -103,11 +103,11 @@ namespace TestSystem.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "Пароли не совпадают.")]
             public string ConfirmPassword { get; set; }
             
-            [Required]
+            [Required(ErrorMessage = "Поле Имя обязательно для заполнения")]
             [Display(Name = "Имя")]
             public string FirstName { get; set; }
 
-            [Required]
+            [Required(ErrorMessage = "Поле Фамилия обязательно для заполнения")]
             [Display(Name = "Фамилия")]
             public string LastName { get; set; }
         }

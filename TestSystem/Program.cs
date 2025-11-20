@@ -1,4 +1,6 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using TestSystem.Data;
 using TestSystem.Services;
@@ -13,14 +15,25 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
         options.SignIn.RequireConfirmedAccount = false;
     })
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddErrorDescriber<RussianIdentityErrorDescriber>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); 
-builder.Services.AddScoped<JudgeService>();
 builder.Services.AddScoped<SubmissionEvaluator>();
 builder.Services.AddScoped<CodeRunner>();
 builder.Services.AddHostedService<SubmissionBackgroundService>();
+builder.Services.AddMvc()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { new CultureInfo("ru-RU") };
+    options.DefaultRequestCulture = new RequestCulture("ru-RU");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 var app = builder.Build();
 
