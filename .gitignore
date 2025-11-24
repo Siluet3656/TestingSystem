@@ -1,11 +1,31 @@
+# Build outputs
 bin/
 obj/
-/packages/
-riderModule.iml
-/_ReSharper.Caches/
-TestSystem/Temp/
 
-# Файлы SQLite
+# NuGet
+packages/
+[Nn]uget/
+*.nupkg
+*.snupkg
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+/_ReSharper.Caches/
+
+# IDE
+*.user
+*.suo
+
+# Temp and cache
+TestSystem/Temp/
+*.cache/
+
+# SQLite
 *.db
 *.db-shm
 *.db-wal
+
+# System files
+.DS_Store
+thumbs.db
